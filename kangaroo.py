@@ -159,7 +159,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
 
 compressed = k
 puzzle = rng
-kangaroo_power = 4
+kangaroo_power = 10 ### you may change this for selected range
 lower = 2 ** (puzzle - 1)
 upper = 2 ** puzzle - 1
 DP_rarity = 1 << ((puzzle - 2 * kangaroo_power) // 2 - 2)
