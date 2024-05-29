@@ -133,7 +133,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
     W = [add(W0, mul(wi)) for wi in w]
     dw = [0] * Nw
     memo = {i: 1 << i for i in range(hop_modulo)}
-    jumps, jumps_old, t0 = 0, 0, time.time()
+    jumps, t0 = 0, time.time()
     while True:
         for k in range(Nt):
             jumps += 1
@@ -154,8 +154,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
         t1 = time.time()
         if t1 - t0 > 1:
             speedup_prob(start, jumps)
-            t0, jumps_old = t1, jumps
-
+            t0 = t1
 
 compressed = k
 puzzle = rng
