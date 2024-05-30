@@ -105,11 +105,10 @@ def add(P, Q):
 
 def mul(k, P=PG):
     R = Z
-    Q = P
     while k:
         if k & 1:
-            R = add(R, Q)
-        Q = add(Q, Q)
+            R = add(R, P)
+        P = add(P, P)
         k >>= 1
     return R
 
