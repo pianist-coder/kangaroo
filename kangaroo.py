@@ -125,10 +125,10 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
     return False
 
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = [lower + random.randint(0, upper - lower) for _ in range(Nt)]
+    t = [random.randint(lower, upper) for _ in range(Nt)]
     T = [mul(ti) for ti in t]
     dt = [0] * Nt
-    w = [random.randint(0, upper - lower) for _ in range(Nw)]
+    w = [random.randint(0, lower) for _ in range(Nw)]
     W = [add(W0, mul(wi)) for wi in w]
     dw = [0] * Nw
     memo = {i: 1 << i for i in range(hop_modulo)}
@@ -156,12 +156,11 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             t0 = t1
 
 compressed = k
-puzzle = rng
 kangaroo_power = 10 ### you may change this for selected range
-lower = 2 ** (puzzle - 1)
-upper = 2 ** puzzle - 1
-DP_rarity = 1 << ((puzzle - 2 * kangaroo_power) // 2 - 2)
-hop_modulo = (puzzle - 1) // 2 + kangaroo_power
+lower = 2 ** (rng - 1)
+upper = 2 ** rng - 1
+DP_rarity = 1 << ((rng - 2 * kangaroo_power) // 2 - 2)
+hop_modulo = (rng - 1) // 2 + kangaroo_power
 Nt = Nw = 2 ** kangaroo_power
 pub = to_cpub(compressed)
 X = int(pub[2:], 16)
