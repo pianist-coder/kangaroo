@@ -10,12 +10,12 @@ import random
 import sys
 import os
 from gmpy2 import mpz, powmod, invert
-from math import log2
+from math import log2, sqrt
 
 sp = """
------------------------------------------------------
+-------------------------------------------------------
 {0:x}
------------------------------------------------------"""
+-------------------------------------------------------"""
 splash = """
 . . .-. . . .-. .-. .-. .-. .-. 
 |<  |-| |\| |.. |-| |(  | | | | 
@@ -65,13 +65,15 @@ def pr():
     printc(color.BOLD, "\n[+] Program started")
     print("-"*87)
     print(f"[+] Pubkey:          {pub.upper()}")
-    print(f"[+] Key range:       {rng - 1} bit")
+    print(f"[+] Key range:       2^{rng-1}({2**(rng - 1)})")
+    print(f"[+] Expected op.:    2^{p_2(2.13 * sqrt(1 << (rng-1)))}")    
     print("-"*87)
 
-def speedup_prob(st, counter):
+def speedup_prob(st, counter, Nt):
     elapsed_time = time.time() - start
     speed = counter / elapsed_time
-    print(f"[2^{p_2(counter)}] [{scan_str(speed)}keys] [{display_time(elapsed_time)}]    ", end="\r")
+    prob = float(counter / (2.13 * sqrt(1 << (rng-1))) * 100)
+    print(f"[{Nt}] [2^{p_2(counter)}] [{scan_str(speed)}keys] [{display_time(elapsed_time)}] [{prob:.2f}%]   ", end="\r")
 
 def scan_str(num):
     suffixes = ["", "K", "M", "B", "T"]
@@ -153,7 +155,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             W[k] = add(P[pw], W[k])
         t1 = time.time()
         if t1 - t0 > 1:
-            speedup_prob(start, jumps)
+            speedup_prob(start, jumps, Nt)
             t0 = t1
 
 #optimal params
