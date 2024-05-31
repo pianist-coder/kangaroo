@@ -5,7 +5,6 @@
 # Created:     24.05.2024
 # Copyright:   (c) pianist 2022-2024
 #-------------------------------------------------------------------------
-
 import time
 import random
 import sys
@@ -39,7 +38,6 @@ Gx, Gy = (mpz(550662630222773436695787188951685343262506034537775941755001873603
           mpz(32670510020758816978083085130507043184471273380659243275938904335757337482424))
 modulo =  mpz(115792089237316195423570985008687907853269984665640564039457584007908834671663)
 PG = (Gx, Gy)
-Z = (0, 0)
 
 #=========================================================================
 
@@ -89,6 +87,7 @@ def display_time(seconds):
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
 def add(P, Q, modulo=modulo):
+    Z = (0, 0)
     if P == Z or Q == Z:
         return P if Q == Z else Q
     Px, Py = P
@@ -107,14 +106,14 @@ def add(P, Q, modulo=modulo):
     return (x, y)
 
 def mul(k, P=PG):
-    R = Z
+    R = (0, 0)
     while k:
         if k & 1:
             R = add(R, P)
         P = add(P, P)
         k >>= 1
     return R
-    
+
 def check(P, k, DP_rarity, A, Ak, B, Bk):
     if not P[0] % DP_rarity:
         A.append(P[0])
@@ -157,19 +156,20 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             speedup_prob(start, jumps)
             t0 = t1
 
-KANG = 10
+#optimal params
+KANG = 8
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
-DP_rarity = (1 << (((rng - 2 * KANG) // 2) - 2))
-hop_modulo = rng - 2 * KANG + 2
+DP_rarity = 2048
+hop_modulo = 32 - 1
 
 Nt = Nw = 2 ** KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
-W0 = (X, Y)
+W0 = (mpz(X), mpz(Y))
 P = [PG]
-for _ in range((1 << KANG) - 1):
+for _ in range(255):
     P.append(add(P[-1], P[-1]))
 
 pr()
