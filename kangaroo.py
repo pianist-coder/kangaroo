@@ -112,7 +112,7 @@ def mul(k, P=PG):
         P = add(P, P)
         k >>= 1
     return R
-
+    
 def check(P, k, DP_rarity, A, Ak, B, Bk):
     if not P[0] % DP_rarity:
         A.append(P[0])
@@ -156,7 +156,7 @@ KANG = 8
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
 DP_rarity = 1 << (((rng - 2 * KANG) // 2) - 2)
-hop_modulo = (rng - 1) // 2 + KANG
+hop_modulo = (rng - 1) // 2
 Nt = Nw = 2 ** KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
