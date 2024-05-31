@@ -41,6 +41,8 @@ modulo =  mpz(115792089237316195423570985008687907853269984665640564039457584007
 PG = (Gx, Gy)
 Z = (0, 0)
 
+#=========================================================================
+
 def printc(colors, message):
     print(colors + message + color.END)
 
@@ -122,6 +124,8 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
             kB = Bk[B.index(next(iter(set(A) & set(B))))]
             print(sp.format(abs(kA-kB)))
             printc(color.BOLD, f"[+] Complete in {time.time() - start:.2f} sec")
+            with open('FOUND.txt', 'a') as f:
+                f.write(f'{pub.lower()};{abs(kA-kB):x}\n')
             return True
     return False
 
@@ -155,8 +159,8 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
 KANG = 8
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
-DP_rarity = 1 << (((rng - 2 * KANG) // 2) - 2)
-hop_modulo = (rng - 1) // 2
+DP_rarity = (1 << (((rng - 2 * KANG) // 2) - 2))//2
+hop_modulo = (rng - 1) // 2 + KANG
 Nt = Nw = 2 ** KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
