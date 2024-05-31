@@ -87,13 +87,11 @@ def display_time(seconds):
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
 def add(P, Q):
-    if P == Z:
-        return Q
-    if Q == Z:
-        return P
+    if P == Z or Q == Z:
+        return P if Q == Z else Q
     if P[0] == Q[0]:
         if P[1] == Q[1]:
-            inv_2P1 = invert(2 * P[1], modulo)
+            inv_2P1 = invert(P[1] << 1, modulo)
             m = (3 * P[0] * P[0] * inv_2P1) % modulo
         else:
             return Z
@@ -155,14 +153,14 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             speedup_prob(start, jumps)
             t0 = t1
 
-compressed = k
-kangaroo_power = 10 ### you may change this for selected range
+kangaroo_power = 8
 lower = 2 ** (rng - 1)
-upper = 2 ** rng - 1
-DP_rarity = 1 << ((rng - 2 * kangaroo_power) // 2 - 2)
+upper = (lower << 1) - 1
+DP_rarity = 1 << (((rng - 2 * kangaroo_power) // 2) - 2)
 hop_modulo = (rng - 1) // 2 + kangaroo_power
+
 Nt = Nw = 2 ** kangaroo_power
-pub = to_cpub(compressed)
+pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (X, Y)
