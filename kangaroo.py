@@ -174,6 +174,4 @@ for _ in range((1 << KANG) - 1):
 
 pr()
 start = time.time()
-print(hop_modulo)
-print(DP_rarity)
 search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
