@@ -86,19 +86,22 @@ def display_time(seconds):
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
-def add(P, Q):
+def add(P, Q, modulo=modulo):
     if P == Z or Q == Z:
         return P if Q == Z else Q
-    if P[0] == Q[0]:
-        if P[1] == Q[1]:
-            inv_2P1 = invert(P[1] << 1, modulo)
-            m = (3 * P[0] * P[0] * inv_2P1) % modulo
+    Px, Py = P
+    Qx, Qy = Q
+    if Px == Qx:
+        if Py == Qy:
+            inv_2Py = invert((Py << 1) % modulo, modulo)
+            m = (3 * Px * Px * inv_2Py) % modulo
         else:
             return Z
     else:
-        m = ((Q[1] - P[1]) * invert(Q[0] - P[0], modulo)) % modulo
-    x = (m * m - P[0] - Q[0]) % modulo
-    y = (m * (P[0] - x) - P[1]) % modulo
+        inv_diff_x = invert(Qx - Px, modulo)
+        m = ((Qy - Py) * inv_diff_x) % modulo
+    x = (m * m - Px - Qx) % modulo
+    y = (m * (Px - x) - Py) % modulo
     return (x, y)
 
 def mul(k, P=PG):
@@ -158,17 +161,14 @@ lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
 DP_rarity = 1 << (((rng - 2 * kangaroo_power) // 2) - 2)
 hop_modulo = (rng - 1) // 2 + kangaroo_power
-
 Nt = Nw = 2 ** kangaroo_power
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (X, Y)
-
 P = [PG]
 for _ in range(255):
     P.append(add(P[-1], P[-1]))
-
 pr()
 start = time.time()
 search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
