@@ -128,47 +128,44 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
     t = [random.randint(lower, upper) for _ in range(Nt)]
     T = [mul(ti) for ti in t]
-    dt = [0] * Nt
     w = [random.randint(0, lower) for _ in range(Nw)]
     W = [add(W0, mul(wi)) for wi in w]
-    dw = [0] * Nw
     memo = {i: 1 << i for i in range(hop_modulo)}
     jumps, t0 = 0, time.time()
     while True:
         for k in range(Nt):
             jumps += 1
             pw = T[k][0] % hop_modulo
-            dt[k] = memo[pw]
             if check(T[k], t[k], DP_rarity, T, t, W, w):
                 return
-            t[k] += dt[k]
+            t[k] += memo[pw]
             T[k] = add(P[pw], T[k])
         for k in range(Nw):
             jumps += 1
             pw = W[k][0] % hop_modulo
-            dw[k] = memo[pw]
             if check(W[k], w[k], DP_rarity, W, w, T, t):
                 return
-            w[k] += dw[k]
+            w[k] += memo[pw]
             W[k] = add(P[pw], W[k])
         t1 = time.time()
         if t1 - t0 > 1:
             speedup_prob(start, jumps)
             t0 = t1
 
-kangaroo_power = 8
+KANG = 8
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
-DP_rarity = 1 << (((rng - 2 * kangaroo_power) // 2) - 2)
-hop_modulo = (rng - 1) // 2 + kangaroo_power
-Nt = Nw = 2 ** kangaroo_power
+DP_rarity = 1 << (((rng - 2 * KANG) // 2) - 2)
+hop_modulo = (rng - 1) // 2 + KANG
+Nt = Nw = 2 ** KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (X, Y)
 P = [PG]
-for _ in range(255):
+for _ in range((1 << KANG) - 1):
     P.append(add(P[-1], P[-1]))
+
 pr()
 start = time.time()
 search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
