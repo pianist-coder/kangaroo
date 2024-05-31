@@ -119,9 +119,10 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
     if not P[0] % DP_rarity:
         A.append(P[0])
         Ak.append(k)
-        if set(A) & set(B):
-            kA = Ak[A.index(next(iter(set(A) & set(B))))]
-            kB = Bk[B.index(next(iter(set(A) & set(B))))]
+        res = set(A) & set(B)
+        if res:
+            kA = Ak[A.index(next(iter(res)))]
+            kB = Bk[B.index(next(iter(res)))]
             print(sp.format(abs(kA-kB)))
             printc(color.BOLD, f"[+] Complete in {time.time() - start:.2f} sec")
             with open('FOUND.txt', 'a') as f:
@@ -156,11 +157,12 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             speedup_prob(start, jumps)
             t0 = t1
 
-KANG = 8
+KANG = 10
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
-DP_rarity = (1 << (((rng - 2 * KANG) // 2) - 2))//2
-hop_modulo = (rng - 1) // 2 + KANG
+DP_rarity = (1 << (((rng - 2 * KANG) // 2) - 2))
+hop_modulo = rng - 2 * KANG + 2
+
 Nt = Nw = 2 ** KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
@@ -172,4 +174,6 @@ for _ in range((1 << KANG) - 1):
 
 pr()
 start = time.time()
+print(hop_modulo)
+print(DP_rarity)
 search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
