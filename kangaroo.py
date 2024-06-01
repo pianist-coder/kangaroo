@@ -5,12 +5,13 @@
 # Created:     24.05.2024
 # Copyright:   (c) pianist 2022-2024
 #-------------------------------------------------------------------------
+
 import time
 import random
 import sys
 import os
 from gmpy2 import mpz, powmod, invert
-from math import log2, sqrt
+from math import log2, sqrt, log
 
 sp = """
 -------------------------------------------------------
@@ -66,6 +67,7 @@ def pr():
     print("-"*87)
     print(f"[+] Pubkey:          {pub.upper()}")
     print(f"[+] Key range:       2^{rng-1}({2**(rng - 1)})")
+    print(f"[+] DP:              2^{int(log2(DP_rarity))}({DP_rarity:x})")
     print(f"[+] Expected op.:    2^{p_2(2.13 * sqrt(1 << (rng-1)))}")    
     print("-"*87)
 
@@ -131,12 +133,19 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
             return True
     return False
 
+def generate_odd_numbers(lower, upper, size):
+  odd_numbers = []
+  while len(odd_numbers) < size:
+    number = random.SystemRandom().randint(lower, upper)
+    if number % 2 != 0:
+      odd_numbers.append(number)
+  return odd_numbers
+  
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = [random.randint(lower, upper) for _ in range(Nt)]
+    t = generate_odd_numbers(lower, lower + lower // 2, Nt)
     T = [mul(ti) for ti in t]
-    w = [random.randint(0, lower) for _ in range(Nw)]
+    w = [(i + 1) for i in range(Nw)]
     W = [add(W0, mul(wi)) for wi in w]
-    memo = {i: 1 << i for i in range(hop_modulo)}
     jumps, t0 = 0, time.time()
     while True:
         for k in range(Nt):
@@ -144,14 +153,14 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             pw = T[k][0] % hop_modulo
             if check(T[k], t[k], DP_rarity, T, t, W, w):
                 return
-            t[k] += memo[pw]
+            t[k] += 1 << pw
             T[k] = add(P[pw], T[k])
         for k in range(Nw):
             jumps += 1
             pw = W[k][0] % hop_modulo
             if check(W[k], w[k], DP_rarity, W, w, T, t):
                 return
-            w[k] += memo[pw]
+            w[k] += 1 << pw
             W[k] = add(P[pw], W[k])
         t1 = time.time()
         if t1 - t0 > 1:
@@ -159,19 +168,21 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             t0 = t1
 
 #optimal params
-KANG = 8
+KANG = 10
 lower = 2 ** (rng - 1)
 upper = (lower << 1) - 1
-DP_rarity = 2048
-hop_modulo = 32 - 1
+DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 1
+#hop_modulo = 31
+hop_modulo = round(log(upper))
+if hop_modulo % 2 == 0: hop_modulo -= 1
 
-Nt = Nw = 2 ** KANG
+Nt = Nw = 1 << KANG
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (mpz(X), mpz(Y))
 P = [PG]
-for _ in range(255):
+for _ in range(Nt - 1):
     P.append(add(P[-1], P[-1]))
 
 pr()
