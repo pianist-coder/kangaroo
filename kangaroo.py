@@ -170,7 +170,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
 KANG = rng // 5
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
-DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 1
+DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
 hop_modulo = 32
 
 Nt = Nw = 1 << KANG
