@@ -133,18 +133,17 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
             return True
     return False
 
-def generate_odd_numbers(lower, upper, size):
+def kangs(lower, upper, size):
   odd_numbers = []
   while len(odd_numbers) < size:
     number = random.SystemRandom().randint(lower, upper)
-    if number % 2 != 0:
-      odd_numbers.append(number)
+    odd_numbers.append(number)
   return odd_numbers
   
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = generate_odd_numbers(lower, lower + lower // 2, Nt)
+    t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
-    w = [(i + 1) for i in range(Nw)]
+    w = kangs(0, lower, Nw)
     W = [add(W0, mul(wi)) for wi in w]
     jumps, t0 = 0, time.time()
     while True:
@@ -168,21 +167,20 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             t0 = t1
 
 #optimal params
-KANG = 10
+KANG = rng // 5
 lower = 2 ** (rng - 1)
-upper = (lower << 1) - 1
+upper = 2 ** rng - 1
 DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 1
-#hop_modulo = 31
-hop_modulo = round(log(upper))
-if hop_modulo % 2 == 0: hop_modulo -= 1
+hop_modulo = 32
 
 Nt = Nw = 1 << KANG
+
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (mpz(X), mpz(Y))
 P = [PG]
-for _ in range(Nt - 1):
+for _ in range(KANG ** 2):
     P.append(add(P[-1], P[-1]))
 
 pr()
