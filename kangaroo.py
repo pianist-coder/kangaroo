@@ -171,7 +171,7 @@ KANG = rng // 5
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
 DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
-hop_modulo = hop_modulo = round(log(2**rng)+5)
+hop_modulo = round(log(2**rng)+5)
 
 Nt = Nw = 1 << KANG
 
