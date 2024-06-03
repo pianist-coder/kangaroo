@@ -139,9 +139,9 @@ def kangs(lower, upper, size):
   return list(odd_numbers)
 
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = kangs(lower, upper, Nt)
+    t = kangs(lower, upper-1, Nt)
     T = [mul(ti) for ti in t]
-    w = kangs(1, upper, Nw)
+    w = kangs(1, upper-1, Nw)
     W = [add(W0, mul(wi)) for wi in w]
     jumps, t0 = 0, time.time()
     while True:
@@ -181,6 +181,5 @@ for _ in range(Nt):
     P.append(add(P[-1], P[-1]))
 
 pr()
-
 start = time.time()
 search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
