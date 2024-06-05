@@ -165,7 +165,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             speedup_prob(start, jumps, Nt + Nw)
             t0 = t1
 
-KANG = rng // 5
+KANG = 9
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
 DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
