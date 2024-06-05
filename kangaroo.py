@@ -107,6 +107,13 @@ def add(P, Q, modulo=modulo):
     y = (m * (Px - x) - Py) % modulo
     return (x, y)
 
+def neg(P, modulo=modulo):
+    Px, Py = P
+    return (Px, (-Py) % modulo)
+
+def sub(P, Q, modulo=modulo):
+    return add(P, neg(Q), modulo)
+    
 def mul(k, P=PG):
     R = (0, 0)
     while k:
@@ -164,8 +171,13 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
         if t1 - t0 > 1:
             speedup_prob(start, jumps, Nt + Nw)
             t0 = t1
+        if t1 - t0 > 2:
+            t = kangs(lower, upper, Nt)
+            T = [mul(ti) for ti in t]
+            w = kangs(0, upper, Nw)
+            W = [add(W0, mul(wi)) for wi in w]
 
-KANG = 9
+KANG = 10
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
 DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
