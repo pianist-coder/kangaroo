@@ -184,7 +184,7 @@ def main():
 KANG = 9
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
-DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 - 1
+DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2
 hop_modulo = rng-KANG
 Nt = Nw = 1 << KANG
 pub = to_cpub(k)
