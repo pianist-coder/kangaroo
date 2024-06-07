@@ -18,19 +18,20 @@ pip install gmpy2
 Once the dependencies are installed, you can run the kangaroo script with the following command-line arguments:
 
 ```
-python3 kangaroo.py <public_key> <range>
+python3 kangaroo.py <public_key> <range> <cores>
 ```
 
 - `<public_key>`: The public key you want to find the corresponding private key for.
 - `<range>`: The bit range to search for the private key.
+- `<cores>`: The numbers of your CPU cores
 
 For example, to run the script with the following parameters:
 
 ```
-python3 kangaroo.py 038AF9439C38F9AA692E03E789DF533C9207F57B961E30CC67E08E4521B5579FC9 40
+python3 kangaroo.py 038AF9439C38F9AA692E03E789DF533C9207F57B961E30CC67E08E4521B5579FC9 40 10
 ```
 
-This will search for the private key corresponding to the given public key in a key range of 39-40 bits.
+This will search for the private key corresponding to the given public key in a key range of 39-40 bits with 10 CPU cores.
 
 ## Run
 ```
