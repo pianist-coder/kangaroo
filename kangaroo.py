@@ -10,6 +10,7 @@ import time
 import random
 import sys
 import os
+import multiprocessing
 from gmpy2 import mpz, powmod, invert
 from math import log2, sqrt, log
 
@@ -139,8 +140,6 @@ def kangs(lower, upper, size):
     number = random.SystemRandom().randrange(lower, upper, 2)
     odd_numbers.add(number)
   return list(odd_numbers)
-import multiprocessing
-import time
 
 def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
     t = kangs(0, upper, Nt)
