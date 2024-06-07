@@ -146,7 +146,7 @@ def kangs(lower, upper, size):
   return list(odd_numbers)
 
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = kangs(lower, upper, Nt)
+    t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
     w = kangs(0, upper, Nw)
     W = [add(W0, mul(wi)) for wi in w]
@@ -168,18 +168,14 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
                 w[k] += 1 << pw
                 W[k] = add(P[pw], W[k])
         t1 = time.time()
-        if t1 - t0 > 2:
+        if t1 - t0 > 1:
             speedup_prob(start, jumps, Nt + Nw)
             t0 = t1
-            t = kangs(lower, upper, Nt)
-            T = [mul(ti) for ti in t]
-            w = kangs(0, upper, Nw)
-            W = [add(W0, mul(wi)) for wi in w]
 
 KANG = 9
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
-DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2
+DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
 hop_modulo = rng-KANG
 Nt = Nw = 1 << KANG
 pub = to_cpub(k)
