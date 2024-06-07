@@ -17,11 +17,6 @@ sp = """
 -------------------------------------------------------
 {0:x}
 -------------------------------------------------------"""
-splash = """
-. . .-. . . .-. .-. .-. .-. .-. 
-|<  |-| |\| |.. |-| |(  | | | | 
-' ` ` ' ' ` `-' ` ' ' ' `-' `-' 
-"""
 #=========================================================================
 class color:
     GREEN = "\033[32m"
@@ -32,9 +27,9 @@ class color:
     END = "\033[0m"
 #=========================================================================
 
-k, rng = sys.argv[1:]
+k, rng, cores = sys.argv[1:]
 rng = int(rng)
-
+cores = int(cores)
 Gx, Gy = (mpz(55066263022277343669578718895168534326250603453777594175500187360389116729240),
           mpz(32670510020758816978083085130507043184471273380659243275938904335757337482424))
 modulo =  mpz(115792089237316195423570985008687907853269984665640564039457584007908834671663)
@@ -61,7 +56,7 @@ def p_2(num):
 
 def pr():
     os.system("cls||clear")
-    printc(color.GREEN, splash)
+    printc(color.GREEN, 'KANGAROO\n')
     printc(color.RED, "by pianist (Telegram: @pianist_coder | btc: bc1q0jth0rjaj2vqtqgw45n39fg4qrjc37hcw4frcz)")
     printc(color.BOLD, "\n[+] Program started")
     print("-"*87)
@@ -144,8 +139,10 @@ def kangs(lower, upper, size):
     number = random.SystemRandom().randrange(lower, upper, 2)
     odd_numbers.add(number)
   return list(odd_numbers)
+import multiprocessing
+import time
 
-def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
+def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
     t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
     w = kangs(0, upper, Nw)
@@ -157,6 +154,7 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
             if k < Nt:
                 pw = T[k][0] % hop_modulo
                 if check(T[k], t[k], DP_rarity, T, t, W, w):
+                    result_queue.put((thread_id, T[k], t[k], W[k], w[k]))
                     return
                 t[k] += 1 << pw
                 T[k] = add(P[pw], T[k])
@@ -164,13 +162,25 @@ def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
                 k -= Nt
                 pw = W[k][0] % hop_modulo
                 if check(W[k], w[k], DP_rarity, W, w, T, t):
+                    result_queue.put((thread_id, T[k], t[k], W[k], w[k]))
                     return
                 w[k] += 1 << pw
                 W[k] = add(P[pw], W[k])
         t1 = time.time()
-        if t1 - t0 > 1:
-            speedup_prob(start, jumps, Nt + Nw)
+        if t1 - t0 > 1 and thread_id == 0:
+            speedup_prob(start, jumps*cores, (Nt + Nw)*cores)
             t0 = t1
+
+def main():
+    pr()
+    result_queue = multiprocessing.Queue()
+    processes = [
+        multiprocessing.Process(target=search_thread, args=(i, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue)) for i in range(cores)]
+    for p in processes:
+        p.start()
+    result = result_queue.get()
+    for p in processes:
+        p.terminate()
 
 KANG = 9
 lower = 2 ** (rng - 1)
@@ -187,6 +197,7 @@ P = [PG]
 for _ in range(Nt):
     P.append(add(P[-1], P[-1]))
 
-pr()
 start = time.time()
-search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
+
+if __name__ == "__main__":
+    main()
