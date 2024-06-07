@@ -141,7 +141,7 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
 def kangs(lower, upper, size):
   odd_numbers = set()
   while len(odd_numbers) < size:
-    number = random.SystemRandom().randint(lower, upper)
+    number = random.SystemRandom().randrange(lower, upper, 2)
     odd_numbers.add(number)
   return list(odd_numbers)
 
