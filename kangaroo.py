@@ -85,7 +85,7 @@ def display_time(seconds):
     hours, rem = divmod(seconds, 3600)
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
-
+    
 def add(P, Q, modulo=modulo):
     Px, Py = P
     Qx, Qy = Q
@@ -93,12 +93,17 @@ def add(P, Q, modulo=modulo):
         return Q
     if Q == (0, 0):
         return P
-    if Px == Qx and Py == Qy:
-        inv_2Py = invert((Py << 1) % modulo, modulo)
-        m = (3 * Px * Px * inv_2Py) % modulo
+    if P == Q:
+        if Py == 0:
+            return (0, 0)
+        lambda_numerator = (3 * Px * Px) % modulo
+        lambda_denominator = invert(2 * Py, modulo)
     else:
-        inv_diff_x = invert(Qx - Px, modulo)
-        m = ((Qy - Py) * inv_diff_x) % modulo
+        if Px == Qx:
+            return (0, 0)
+        lambda_numerator = (Qy - Py) % modulo
+        lambda_denominator = invert(Qx - Px, modulo)
+    m = (lambda_numerator * lambda_denominator) % modulo
     x = (m * m - Px - Qx) % modulo
     y = (m * (Px - x) - Py) % modulo
     return (x, y)
@@ -133,13 +138,13 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
                 f.write(f'{pub.lower()};{abs(kA-kB):x}\n')
             return True
     return False
-
+    
 def kangs(lower, upper, size):
-  odd_numbers = set()
-  while len(odd_numbers) < size:
+  numbers = set()
+  while len(numbers) < size:
     number = random.SystemRandom().randrange(lower, upper, 1)
-    odd_numbers.add(number)
-  return list(odd_numbers)
+    numbers.add(number)
+  return list(numbers)
 
 def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
     t = kangs(0, upper, Nt)
