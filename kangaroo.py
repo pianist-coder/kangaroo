@@ -147,7 +147,7 @@ def kangs(lower, upper, size):
   return list(numbers)
 
 def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
-    t = kangs(lower//2, upper, Nt)
+    t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
     w = kangs(0, upper, Nw)
     W = [add(W0, mul(wi)) for wi in w]
