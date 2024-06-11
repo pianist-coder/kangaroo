@@ -85,8 +85,8 @@ def display_time(seconds):
     hours, rem = divmod(seconds, 3600)
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
-    
-def add(P, Q, modulo=modulo):
+
+def add(P, Q):
     Px, Py = P
     Qx, Qy = Q
     if P == (0, 0):
@@ -108,11 +108,11 @@ def add(P, Q, modulo=modulo):
     y = (m * (Px - x) - Py) % modulo
     return (x, y)
 
-def neg(P, modulo=modulo):
+def neg(P):
     Px, Py = P
     return (Px, (-Py) % modulo)
 
-def sub(P, Q, modulo=modulo):
+def sub(P, Q):
     return add(P, neg(Q), modulo)
     
 def mul(k, P=PG):
@@ -142,12 +142,12 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
 def kangs(lower, upper, size):
   numbers = set()
   while len(numbers) < size:
-    number = random.SystemRandom().randrange(lower, upper, 1)
+    number = random.SystemRandom().randrange(lower, upper)
     numbers.add(number)
   return list(numbers)
-
+  
 def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
-    t = kangs(0, upper, Nt)
+    t = kangs(lower//2, upper, Nt)
     T = [mul(ti) for ti in t]
     w = kangs(0, upper, Nw)
     W = [add(W0, mul(wi)) for wi in w]
