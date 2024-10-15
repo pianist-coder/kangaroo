@@ -134,12 +134,13 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
     return False
 
 def kangs(lower, upper, size):
-  odd_numbers = []
-  while len(odd_numbers) < size:
-    number = random.SystemRandom().randint(lower, upper)
-    odd_numbers.append(number)
-  return odd_numbers
-  
+    odd_numbers = set()
+    while len(odd_numbers) < size:
+        number = random.SystemRandom().randint(lower, upper)
+        if number % 2 == 1:
+            odd_numbers.add(number)
+    return list(odd_numbers)
+
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
     t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
