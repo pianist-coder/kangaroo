@@ -91,14 +91,21 @@ def display_time(seconds):
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
+#speedup this please
+
 def add(P, Q):
     Z = (0, 0)
-    if P == Z or Q == Z:
-        return P if Q == Z else Q
+    if P == Z:
+        return Q
+    if Q == Z:
+        return P
+    
     Px, Py = P
     Qx, Qy = Q
+
     if Px == Qx:
         if Py == Qy:
+            # Use double formula
             inv_2Py = invert((Py << 1) % modulo, modulo)
             m = (3 * Px * Px * inv_2Py) % modulo
         else:
@@ -106,8 +113,10 @@ def add(P, Q):
     else:
         inv_diff_x = invert(Qx - Px, modulo)
         m = ((Qy - Py) * inv_diff_x) % modulo
+
     x = (m * m - Px - Qx) % modulo
     y = (m * (Px - x) - Py) % modulo
+    
     return (x, y)
 
 def mul(k, P=PG):
