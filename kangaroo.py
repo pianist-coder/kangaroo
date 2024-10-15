@@ -12,6 +12,7 @@ import sys
 import os
 from gmpy2 import mpz, powmod, invert
 from math import log2, sqrt, log
+from collections import defaultdict
 
 sp = """
 -------------------------------------------------------
@@ -90,7 +91,7 @@ def display_time(seconds):
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
-def add(P, Q, modulo=modulo):
+def add(P, Q):
     Z = (0, 0)
     if P == Z or Q == Z:
         return P if Q == Z else Q
@@ -118,47 +119,49 @@ def mul(k, P=PG):
         k >>= 1
     return R
 
-def check(P, k, DP_rarity, A, Ak, B, Bk):
-    if not P[0] % DP_rarity:
-        A.append(P[0])
-        Ak.append(k)
-        res = set(A) & set(B)
-        if res:
-            kA = Ak[A.index(next(iter(res)))]
-            kB = Bk[B.index(next(iter(res)))]
-            print(sp.format(abs(kA-kB)))
-            printc(color.BOLD, f"[+] Complete in {time.time() - start:.2f} sec")
-            with open('FOUND.txt', 'a') as f:
-                f.write(f'{pub.lower()};{abs(kA-kB):x}\n')
-            return True
-    return False
-
 def kangs(lower, upper, size):
     odd_numbers = set()
     while len(odd_numbers) < size:
         number = random.SystemRandom().randint(lower, upper)
-        if number % 2 == 1:
-            odd_numbers.add(number)
+        #if number % 2 == 1:
+        odd_numbers.add(number)
     return list(odd_numbers)
 
+def check(P, k, DP_rarity, A_dict, B_dict):
+    if not P[0] % DP_rarity:
+        if P[0] in B_dict:
+            kA = k
+            kB = B_dict[P[0]]
+            print(sp.format(abs(kA - kB)))
+            printc(color.BOLD, f"[+] Complete in {time.time() - start:.2f} sec")
+            with open('FOUND.txt', 'a') as f:
+                f.write(f'{pub.lower()};{abs(kA - kB):x}\n')
+            return True
+        A_dict[P[0]] = k
+    return False
+
 def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
-    t = kangs(0, upper, Nt)
+    t = kangs(lower, upper, Nt)
     T = [mul(ti) for ti in t]
-    w = kangs(0, lower, Nw)
+    w = kangs(0, upper, Nw)
     W = [add(W0, mul(wi)) for wi in w]
+    
+    T_dict = defaultdict(int)
+    W_dict = defaultdict(int)
+    
     jumps, t0 = 0, time.time()
     while True:
         for k in range(Nt):
             jumps += 1
             pw = T[k][0] % hop_modulo
-            if check(T[k], t[k], DP_rarity, T, t, W, w):
+            if check(T[k], t[k], DP_rarity, T_dict, W_dict):
                 return
             t[k] += 1 << pw
             T[k] = add(P[pw], T[k])
         for k in range(Nw):
             jumps += 1
             pw = W[k][0] % hop_modulo
-            if check(W[k], w[k], DP_rarity, W, w, T, t):
+            if check(W[k], w[k], DP_rarity, W_dict, T_dict):
                 return
             w[k] += 1 << pw
             W[k] = add(P[pw], W[k])
