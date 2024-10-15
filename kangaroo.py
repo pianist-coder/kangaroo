@@ -10,7 +10,6 @@ import time
 import random
 import sys
 import os
-import multiprocessing
 from gmpy2 import mpz, powmod, invert
 from math import log2, sqrt, log
 
@@ -18,6 +17,11 @@ sp = """
 -------------------------------------------------------
 {0:x}
 -------------------------------------------------------"""
+splash = """
+. . .-. . . .-. .-. .-. .-. .-. 
+|<  |-| |\| |.. |-| |(  | | | | 
+' ` ` ' ' ` `-' ` ' ' ' `-' `-' 
+"""
 #=========================================================================
 class color:
     GREEN = "\033[32m"
@@ -28,9 +32,9 @@ class color:
     END = "\033[0m"
 #=========================================================================
 
-k, rng, cores = sys.argv[1:]
+k, rng = sys.argv[1:]
 rng = int(rng)
-cores = int(cores)
+
 Gx, Gy = (mpz(55066263022277343669578718895168534326250603453777594175500187360389116729240),
           mpz(32670510020758816978083085130507043184471273380659243275938904335757337482424))
 modulo =  mpz(115792089237316195423570985008687907853269984665640564039457584007908834671663)
@@ -57,14 +61,14 @@ def p_2(num):
 
 def pr():
     os.system("cls||clear")
-    printc(color.GREEN, 'KANGAROO\n')
+    printc(color.GREEN, splash)
     printc(color.RED, "by pianist (Telegram: @pianist_coder | btc: bc1q0jth0rjaj2vqtqgw45n39fg4qrjc37hcw4frcz)")
     printc(color.BOLD, "\n[+] Program started")
     print("-"*87)
     print(f"[+] Pubkey:          {pub.upper()}")
-    print(f"[+] Key range:       2^{rng-1} ({2**(rng - 1)})")
-    print(f"[+] DP:              2^{int(log2(DP_rarity))} ({DP_rarity})")
-    print(f"[+] Expected op.:    2^{p_2(2.2 * sqrt(1 << (rng-1)))} ({int(2.2 * sqrt(1 << (rng-1)))})")    
+    print(f"[+] Key range:       2^{rng-1}({2**(rng - 1)})")
+    print(f"[+] DP:              2^{int(log2(DP_rarity))}({DP_rarity:x})")
+    print(f"[+] Expected op.:    2^{p_2(2.13 * sqrt(1 << (rng-1)))}")    
     print("-"*87)
 
 def speedup_prob(st, counter, Nt):
@@ -86,35 +90,25 @@ def display_time(seconds):
     minutes, seconds = divmod(rem, 60)
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:05.2f}"
 
-def add(P, Q):
+def add(P, Q, modulo=modulo):
+    Z = (0, 0)
+    if P == Z or Q == Z:
+        return P if Q == Z else Q
     Px, Py = P
     Qx, Qy = Q
-    if P == (0, 0):
-        return Q
-    if Q == (0, 0):
-        return P
-    if P == Q:
-        if Py == 0:
-            return (0, 0)
-        lambda_numerator = (3 * Px * Px) % modulo
-        lambda_denominator = invert(2 * Py, modulo)
+    if Px == Qx:
+        if Py == Qy:
+            inv_2Py = invert((Py << 1) % modulo, modulo)
+            m = (3 * Px * Px * inv_2Py) % modulo
+        else:
+            return Z
     else:
-        if Px == Qx:
-            return (0, 0)
-        lambda_numerator = (Qy - Py) % modulo
-        lambda_denominator = invert(Qx - Px, modulo)
-    m = (lambda_numerator * lambda_denominator) % modulo
+        inv_diff_x = invert(Qx - Px, modulo)
+        m = ((Qy - Py) * inv_diff_x) % modulo
     x = (m * m - Px - Qx) % modulo
     y = (m * (Px - x) - Py) % modulo
     return (x, y)
 
-def neg(P):
-    Px, Py = P
-    return (Px, (-Py) % modulo)
-
-def sub(P, Q):
-    return add(P, neg(Q), modulo)
-    
 def mul(k, P=PG):
     R = (0, 0)
     while k:
@@ -138,70 +132,57 @@ def check(P, k, DP_rarity, A, Ak, B, Bk):
                 f.write(f'{pub.lower()};{abs(kA-kB):x}\n')
             return True
     return False
-    
+
 def kangs(lower, upper, size):
-  numbers = set()
-  while len(numbers) < size:
-    number = random.SystemRandom().randrange(lower, upper)
-    numbers.add(number)
-  return list(numbers)
+  odd_numbers = []
+  while len(odd_numbers) < size:
+    number = random.SystemRandom().randint(lower, upper)
+    odd_numbers.append(number)
+  return odd_numbers
   
-def search_thread(thread_id, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue):
-    t = kangs(lower//2, upper, Nt)
+def search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower):
+    t = kangs(0, upper, Nt)
     T = [mul(ti) for ti in t]
-    w = kangs(0, upper, Nw)
+    w = kangs(0, lower, Nw)
     W = [add(W0, mul(wi)) for wi in w]
     jumps, t0 = 0, time.time()
     while True:
-        for k in range(Nt + Nw):
+        for k in range(Nt):
             jumps += 1
-            if k < Nt:
-                pw = T[k][0] % hop_modulo
-                if check(T[k], t[k], DP_rarity, T, t, W, w):
-                    result_queue.put((thread_id, T[k], t[k], W[k], w[k]))
-                    return
-                t[k] += 1 << pw
-                T[k] = add(P[pw], T[k])
-            else:
-                k -= Nt
-                pw = W[k][0] % hop_modulo
-                if check(W[k], w[k], DP_rarity, W, w, T, t):
-                    result_queue.put((thread_id, T[k], t[k], W[k], w[k]))
-                    return
-                w[k] += 1 << pw
-                W[k] = add(P[pw], W[k])
+            pw = T[k][0] % hop_modulo
+            if check(T[k], t[k], DP_rarity, T, t, W, w):
+                return
+            t[k] += 1 << pw
+            T[k] = add(P[pw], T[k])
+        for k in range(Nw):
+            jumps += 1
+            pw = W[k][0] % hop_modulo
+            if check(W[k], w[k], DP_rarity, W, w, T, t):
+                return
+            w[k] += 1 << pw
+            W[k] = add(P[pw], W[k])
         t1 = time.time()
-        if t1 - t0 > 1 and thread_id == 0:
-            speedup_prob(start, jumps*cores, (Nt + Nw)*cores)
+        if t1 - t0 > 1:
+            speedup_prob(start, jumps, Nt)
             t0 = t1
 
-def main():
-    pr()
-    result_queue = multiprocessing.Queue()
-    processes = [
-        multiprocessing.Process(target=search_thread, args=(i, P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower, result_queue)) for i in range(cores)]
-    for p in processes:
-        p.start()
-    result = result_queue.get()
-    for p in processes:
-        p.terminate()
-
-KANG = 9
+#optimal params
+KANG = rng // 5
 lower = 2 ** (rng - 1)
 upper = 2 ** rng - 1
-DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2
-hop_modulo = rng-KANG
+DP_rarity = 1 << ((rng - 1) // 2 - 2) // 2 + 2
+hop_modulo = round(log(2**rng)+5)
+
 Nt = Nw = 1 << KANG
+
 pub = to_cpub(k)
 X = int(pub[2:], 16)
 Y = X2Y(X, pub[:2] == '03')[1]
 W0 = (mpz(X), mpz(Y))
 P = [PG]
-
-for _ in range(Nt):
+for _ in range(KANG ** 2):
     P.append(add(P[-1], P[-1]))
 
+pr()
 start = time.time()
-
-if __name__ == "__main__":
-    main()
+search(P, W0, DP_rarity, Nw, Nt, hop_modulo, upper, lower)
